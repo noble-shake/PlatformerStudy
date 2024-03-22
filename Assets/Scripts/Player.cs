@@ -45,6 +45,12 @@ public class Player : MonoBehaviour
     [SerializeField] Image effect;
     [SerializeField] TMP_Text textCool; //dash cool timer 
 
+    [Header("무기 투척")]
+    [SerializeField] Transform trsHand;
+    [SerializeField] GameObject objSword;
+    [SerializeField] Transform trsSword;
+    [SerializeField] float throwForce;
+
     private void OnDrawGizmos()
     {
         if (showRay == true)
@@ -98,14 +104,36 @@ public class Player : MonoBehaviour
         // ScreenPoint
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = transform.position.z;
+        Vector3 newPos = mousePos - transform.position;
+        bool isRight = newPos.x > 0 ? true : false;
+
+        if (newPos.x > 0 && transform.localScale.x != -1.0f) {
+            transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+            isRight = true;
+
+        }
+        else if (newPos.x < 0 && transform.localScale.x != 1.0f)
+        {
+            transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+            isRight = false;
+        }
+
+        Vector3 direction = isRight == true ? Vector3.right : Vector3.left;
 
         // y축 12시 기준으로 0도부터, 설정은 마음대로.
-        float angle = Quaternion.FromToRotation(Vector3.up, mousePos - transform.position).eulerAngles.z;
+        ///float angle = Quaternion.FromToRotation(Vector3.up, mousePos - transform.position).eulerAngles.z;
+        float angle = Quaternion.FromToRotation(direction, newPos).eulerAngles.z;
         Debug.Log(360 - angle);
+        angle = isRight == true ? -angle : angle;
+
 
         // World / ViewPort / ScreenPoint
         // World 기준으로 캐릭터로부터 마우스가 몇도인지를 알아내도록 한다.
         // Camera.main.ScreenToWorldPoint(mousePos)
+
+
+        trsHand.localRotation = Quaternion.Euler(0, 0, angle);
+
 
     }
 
@@ -133,12 +161,12 @@ public class Player : MonoBehaviour
         //0 false 1,-1 true
         anim.SetBool("Walk", moveDir.x != 0.0f);
 
-        if (moveDir.x != 0.0f) //오른쪽으로 갈때 x값은1 스케일x는 -1, 왼쪽으로 갈때 x 는 -1 스케일 x 1
-        {
-            Vector3 locScale = transform.localScale;
-            locScale.x = Input.GetAxisRaw("Horizontal") * -1;
-            transform.localScale = locScale;
-        }
+        //if (moveDir.x != 0.0f) //오른쪽으로 갈때 x값은1 스케일x는 -1, 왼쪽으로 갈때 x 는 -1 스케일 x 1
+        //{
+        //    Vector3 locScale = transform.localScale;
+        //    locScale.x = Input.GetAxisRaw("Horizontal") * -1;
+        //    transform.localScale = locScale;
+        //}
     }
 
     private void doJump()//유저가 스페이스키를 누른다면 점프할수있게 준비
@@ -172,6 +200,14 @@ public class Player : MonoBehaviour
             dashCoolTimer = dashCoolTime;
 
             tr.enabled = true;
+        }
+    }
+
+    private void shootWeapon() {
+        if (Input.GetKeyDown(0)) {
+            GameObject go = Instantiate(objSword, trsSword.position, trsSword.rotation);
+            ThrowWeapon gosc = go.GetComponent<ThrowWeapon>();
+            // if(gosc != null)
         }
     }
 

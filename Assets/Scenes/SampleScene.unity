@@ -4088,6 +4088,10 @@ MonoBehaviour:
   dashCoolTime: 2
   effect: {fileID: 439705480}
   textCool: {fileID: 1827452787}
+  trsHand: {fileID: 2068528298}
+  objSword: {fileID: 5615297788211029973, guid: d4de223c7774718458d30cec2aafade3, type: 3}
+  trsSword: {fileID: 826582395}
+  throwForce: 10
 --- !u!96 &1925626955
 TrailRenderer:
   serializedVersion: 3
