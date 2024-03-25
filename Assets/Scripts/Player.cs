@@ -50,6 +50,7 @@ public class Player : MonoBehaviour
     [SerializeField] GameObject objSword;
     [SerializeField] Transform trsSword;
     [SerializeField] float throwForce;
+    bool isRight;
 
     private void OnDrawGizmos()
     {
@@ -80,6 +81,7 @@ public class Player : MonoBehaviour
         moving();
         doJump();
         doDash();
+        shootWeapon();
         checkGravity();
 
         checkTimers();
@@ -105,7 +107,7 @@ public class Player : MonoBehaviour
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = transform.position.z;
         Vector3 newPos = mousePos - transform.position;
-        bool isRight = newPos.x > 0 ? true : false;
+        isRight = newPos.x > 0 ? true : false;
 
         if (newPos.x > 0 && transform.localScale.x != -1.0f) {
             transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
@@ -204,9 +206,13 @@ public class Player : MonoBehaviour
     }
 
     private void shootWeapon() {
-        if (Input.GetKeyDown(0)) {
+        if (Input.GetKeyDown(KeyCode.Mouse0)) {
             GameObject go = Instantiate(objSword, trsSword.position, trsSword.rotation);
             ThrowWeapon gosc = go.GetComponent<ThrowWeapon>();
+            // transform -> rotation °í·Á
+            // vector -> world position
+            Vector2 throwForce = isRight == true ? new Vector2(10f, 0f) : new Vector2(0f, 10f);
+            gosc.SetForce(trsSword.transform.rotation * throwForce, isRight);
             // if(gosc != null)
         }
     }
