@@ -11,42 +11,42 @@ public class ThrowWeapon : MonoBehaviour
     [SerializeField] float isTriggerTime = 1.0f;
     float timer;
     bool doTrigger = false;
-    [SerializeField] Collider2D coll;
+    [SerializeField] Collider2D col;
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(doTrigger == false)
+        {
+            doTrigger = true;
+        }
+    }
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         rigid.AddForce(force, ForceMode2D.Impulse);
+        col = GetComponent<Collider2D>();
     }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (doTrigger == false) {
-            doTrigger = true;
-        }
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        // transform.rotation *= Quaternion.Euler(0, 0, -1); // multiply equalt to plus/subtract in quaternion.
-        transform.Rotate(new Vector3(0f, 0f, (isRight == true ? -360f : 360f) * Time.deltaTime));
+        transform.Rotate(new Vector3(0f, 0f, isRight == true ? -360f : 360f) * Time.deltaTime);
 
-        if (doTrigger == true) {
+        if (doTrigger == true)
+        {
             timer += Time.deltaTime;
-            if (timer > isTriggerTime) {
-                coll.isTrigger = true;
+            if (timer >= isTriggerTime)
+            {
+                col.isTrigger = true;
             }
         }
-
     }
 
-    public void SetForce(Vector2 _force, bool _isRight) {
+    public void SetForce(Vector2 _force, bool _isRight)
+    {
         force = _force;
         isRight = _isRight;
     }

@@ -1,10 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Runtime.CompilerServices;
 using TMPro;
-using Unity.VisualScripting.ReorderableList;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -41,14 +37,14 @@ public class Player : MonoBehaviour
     float dashCoolTimer = 0.0f;
     TrailRenderer tr;
 
-    [Header("대시스킬 화면 연출")]
+    [Header("대시스킬 화면연출")]
     [SerializeField] Image effect;
-    [SerializeField] TMP_Text textCool; //dash cool timer 
+    [SerializeField] TMP_Text textCool;
 
     [Header("무기 투척")]
     [SerializeField] Transform trsHand;
     [SerializeField] GameObject objSword;
-    [SerializeField] Transform trsSword;
+    [SerializeField] Transform trsSword;//위치와 각도를 가져오는곳
     [SerializeField] float throwForce;
     bool isRight;
 
@@ -72,6 +68,7 @@ public class Player : MonoBehaviour
 
     void Start()
     {
+
     }
 
     void Update()
@@ -81,62 +78,15 @@ public class Player : MonoBehaviour
         moving();
         doJump();
         doDash();
-        shootWeapon();
+
+        checkAim();
         checkGravity();
 
         checkTimers();
 
-        checkUiCooldown();
-
-        checkAim();
-    }
-
-    private void checkUiCooldown()
-    {
-        textCool.gameObject.SetActive(dashCoolTimer != 0.0f);
-        textCool.text = (Mathf.CeilToInt(dashCoolTimer)).ToString();
-
-        float amount = 1 - dashCoolTimer / dashCoolTime;
-        effect.fillAmount = amount;
-
-
-    }
-
-    private void checkAim() {
-        // ScreenPoint
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = transform.position.z;
-        Vector3 newPos = mousePos - transform.position;
-        isRight = newPos.x > 0 ? true : false;
-
-        if (newPos.x > 0 && transform.localScale.x != -1.0f) {
-            transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
-            isRight = true;
-
-        }
-        else if (newPos.x < 0 && transform.localScale.x != 1.0f)
-        {
-            transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-            isRight = false;
-        }
-
-        Vector3 direction = isRight == true ? Vector3.right : Vector3.left;
-
-        // y축 12시 기준으로 0도부터, 설정은 마음대로.
-        ///float angle = Quaternion.FromToRotation(Vector3.up, mousePos - transform.position).eulerAngles.z;
-        float angle = Quaternion.FromToRotation(direction, newPos).eulerAngles.z;
-        Debug.Log(360 - angle);
-        angle = isRight == true ? -angle : angle;
-
-
-        // World / ViewPort / ScreenPoint
-        // World 기준으로 캐릭터로부터 마우스가 몇도인지를 알아내도록 한다.
-        // Camera.main.ScreenToWorldPoint(mousePos)
-
-
-        trsHand.localRotation = Quaternion.Euler(0, 0, angle);
-
-
+        shootWeapon();
+        //ui
+        checkUiCoolDown();
     }
 
     private void checkGrounded()
@@ -159,7 +109,10 @@ public class Player : MonoBehaviour
 
         moveDir.x = Input.GetAxisRaw("Horizontal") * moveSpeed;//-1,0,1
         moveDir.y = rigid.velocity.y;
+
         rigid.velocity = moveDir;
+        //transform.position += moveDir * moveSpeed * Time.deltaTime;
+
         //0 false 1,-1 true
         anim.SetBool("Walk", moveDir.x != 0.0f);
 
@@ -181,7 +134,7 @@ public class Player : MonoBehaviour
             }
         }
         else//바닥에 있을때
-        { 
+        {
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 isJump = true;
@@ -205,15 +158,38 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void shootWeapon() {
-        if (Input.GetKeyDown(KeyCode.Mouse0)) {
+    private void checkAim()
+    {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);//
+        mousePos.z = transform.position.z;
+
+        Vector3 newPos = mousePos - transform.position;
+        isRight = newPos.x > 0 ? true : false;
+
+        if (newPos.x > 0 && transform.localScale.x != -1.0f)
+        {
+            transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+        }
+        else if (newPos.x < 0 && transform.localScale.x != 1.0f)
+        {
+            transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        }
+
+        Vector3 direction = isRight == true ? Vector3.right : Vector3.left;
+        float angle = Quaternion.FromToRotation(direction, newPos).eulerAngles.z;
+        angle = isRight == true ? -angle : angle;
+
+        trsHand.localRotation = Quaternion.Euler(0,0,angle);
+    }
+
+    private void shootWeapon()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
             GameObject go = Instantiate(objSword, trsSword.position, trsSword.rotation);
             ThrowWeapon gosc = go.GetComponent<ThrowWeapon>();
-            // transform -> rotation 고려
-            // vector -> world position
-            Vector2 throwForce = isRight == true ? new Vector2(10f, 0f) : new Vector2(0f, 10f);
-            gosc.SetForce(trsSword.transform.rotation * throwForce, isRight);
-            // if(gosc != null)
+            Vector2 throwForce = isRight == true ? new Vector2(10f, 0f) : new Vector2(-10f, 0f);
+            gosc.SetForce(trsSword.rotation * throwForce, isRight);
         }
     }
 
@@ -310,6 +286,15 @@ public class Player : MonoBehaviour
                 dashCoolTimer = 0.0f;
             }
         }
+    }
+
+    private void checkUiCoolDown()
+    {
+        textCool.gameObject.SetActive(dashCoolTimer != 0.0f);
+        textCool.text = (Mathf.CeilToInt(dashCoolTimer)).ToString();
+
+        float amount = 1 - dashCoolTimer / dashCoolTime;
+        effect.fillAmount = amount;
     }
 }
 
