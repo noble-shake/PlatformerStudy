@@ -184,7 +184,7 @@ public class Player : MonoBehaviour
 
     private void shootWeapon()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse0) && InventoryManager.Instance.isActiveInventory() == false)
         {
             GameObject go = Instantiate(objSword, trsSword.position, trsSword.rotation);
             ThrowWeapon gosc = go.GetComponent<ThrowWeapon>();
@@ -241,7 +241,12 @@ public class Player : MonoBehaviour
                 wallStep = true;
                 break;
             case HitBox.enumHitType.ItemCheck:
-
+                //지금 닿은 대상이 Item이 맞는지
+                ItemSetting item = _coll.GetComponent<ItemSetting>();
+                if(item != null) 
+                {
+                    item.GetItem();
+                }
                 break;
         }
     }

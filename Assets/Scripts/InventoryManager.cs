@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,9 +5,10 @@ using UnityEngine;
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance;
-    public GameObject objInventory;
-    private List<Transform> listInventory;
-    [SerializeField] public GameObject objItem;
+
+    [SerializeField] GameObject objInventory;
+    List<Transform> listInventory = new List<Transform>();
+    [SerializeField] GameObject objItem;
 
     private void Awake()
     {
@@ -16,7 +16,8 @@ public class InventoryManager : MonoBehaviour
         {
             Instance = this;
         }
-        else {
+        else
+        {
             Destroy(gameObject);
         }
 
@@ -25,56 +26,59 @@ public class InventoryManager : MonoBehaviour
 
     private void initInventory()
     {
-        Transform[] rangeData = objInventory.transform.GetComponentsInChildren<Transform>(); // Transform 자기 자신은 제거해줘야 함)
+        Transform[] rangeData = objInventory.transform.GetComponentsInChildren<Transform>();
         listInventory.AddRange(rangeData);
         listInventory.RemoveAt(0);
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        ActiveInventory();
+        AcitveInventory();
     }
 
-    private void ShowInventory() { 
-        
-    }
-
-    private void ActiveInventory() {
-        if (Input.GetKeyDown(KeyCode.I)) {
+    private void AcitveInventory()
+    {
+        if (Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.Tab))
+        {
             objInventory.SetActive(!objInventory.activeSelf);
         }
-
-
     }
 
-    private int getEmptyItemSlot() {
+    /// <summary>
+    /// 비어있는 아이템 슬롯 번호를 리턴합니다.
+    /// </summary>
+    /// <returns></returns>
+    private int getEmptyItemSlot()
+    {
         int count = listInventory.Count;
-        for (int iNum = 0; iNum < count; ++iNum) {
+        for (int iNum = 0; iNum < count; ++iNum)
+        {
             Transform trsSlot = listInventory[iNum];
-            if (trsSlot.childCount == 0) {
+            if (trsSlot.childCount == 0)
+            {
                 return iNum;
             }
         }
-
         return -1;
     }
 
-    public bool GetItem(Sprite _spr) {
+    public bool GetItem(Sprite _spr)
+    {
         int slotNum = getEmptyItemSlot();
-
-        if (slotNum == -1) {
-            return false;
+        if (slotNum == -1)
+        { 
+            return false;    //아이템 생성 실패
         }
-        Instantiate(objItem);
-        return true;
+        //Todo
+        GameObject go = Instantiate(objItem, listInventory[slotNum]);
+        DragableUi ui = go.GetComponent<DragableUi>();
+        ui.SetItem(_spr);
+
+        return true;//아이템 생성 성공
     }
 
-    
+    public bool isActiveInventory()
+    {
+        return objInventory.activeSelf;
+    }
 }

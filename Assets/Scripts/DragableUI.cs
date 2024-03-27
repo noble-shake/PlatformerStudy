@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class DragableUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class DragableUi : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     Transform canvas;
     Transform beforeParent;
@@ -16,11 +16,8 @@ public class DragableUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         beforeParent = transform.parent;
 
-
-        // 밑으로 갈 수록 맨 위에 있을 것임.
-        // transform.SetAsFirstSibling
-        // transform.SetAsLastSibling();
         transform.SetParent(canvas);
+        transform.SetAsLastSibling();
 
         canvasGroup.alpha = 0.6f;
         canvasGroup.blocksRaycasts = false;
@@ -33,8 +30,9 @@ public class DragableUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (transform.parent == canvas) {
-            transform.SetParent(beforeParent);
+        if (transform.parent == canvas)//잘못 놓았을때
+        {
+            transform.SetParent(beforeParent);    
             rect.position = beforeParent.GetComponent<RectTransform>().position;
         }
 
@@ -42,28 +40,26 @@ public class DragableUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canvasGroup.blocksRaycasts = true;
     }
 
-    public void SetItem(Sprite _spr) {
-        //img.SetNativeSize();
-        img.sprite = _spr;
-
-    }
-
-    private void Awake()
+    private void Awake()//내 기능을 정의할때
     {
-        img = GetComponent<Image>();
+        //img = GetComponent<Image>();
+        rect = GetComponent<RectTransform>();
+        canvasGroup = GetComponent<CanvasGroup>();
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()//타 스크립트의 기능을 가져올때
     {
         canvas = FindObjectOfType<Canvas>().transform;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetItem(Sprite _spr)
     {
-        
+        if (img == null)
+        {
+            img = GetComponent<Image>();
+        }
+
+        img.sprite = _spr;
+        //img.SetNativeSize();
     }
-
-
 }
